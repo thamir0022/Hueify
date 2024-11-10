@@ -49,7 +49,7 @@ export const userSignIn = async (req, res) => {
 
         if (isCorrect) {
             const {password: pass, ...rest} = existingUser._doc;
-            const token = jwt.sign({id: existingUser._id}, process.env.JWT_SECRET, {expiresIn: "1h"});
+            const token = jwt.sign({id: existingUser._id}, process.env.JWT_SECRET);
             return res.status(200).cookie("access_token", token).json({ message: "Sign In Success", user: rest});
         } else {
             return res.status(400).json({ success: false, message: "Invalid email or password!" });

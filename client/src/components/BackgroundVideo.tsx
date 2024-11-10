@@ -4,7 +4,7 @@ import Header from "./Header";
 const BackgroundVideo = () => {
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      <Header varient="light"/>
+      <Header varient="dark"/>
       <video
         autoPlay
         muted

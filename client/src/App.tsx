@@ -4,8 +4,9 @@ import SignUpPage from "./pages/SignUpPage";
 import HomePage from "./pages/HomePage";
 import { ThemeProvider } from "./components/theme-provider";
 import MenuPage from "./pages/MenuPage";
-import { UserProvider } from "./context/userCOntext";
+import { UserProvider } from "./context/userContext";
 import PrivateRoute from "./components/PrivateRoute";
+import ColorPicker from "./pages/ColorPicker";
 
 const App = () => {
   return (
@@ -14,6 +15,7 @@ const App = () => {
         <Routes>
           <Route element={<PrivateRoute/>}>
             <Route path="/menu" element={<MenuPage/>}/>
+            <Route path="/colors" element={<ColorPicker/>}/>
           </Route>
           <Route path="/" element={<HomePage />} />
           <Route path="/sign-in" element={<LoginPage />} />
