@@ -34,12 +34,12 @@ const Header = ({ varient }: { varient?: "dark" | "light" }) => {
         appliedTheme === "light" ? "text-black" : "text-white"
       } w-full h-14 px-14 flex items-center justify-between bg-transparent`}
     >
-      <span className="text-2xl">Hueify</span>
+      <Link to={"/"} className="text-2xl font-semibold">Hueify</Link>
       <div className="gap-14 flex font-semibold">
-        <Link to="/">Home</Link>
-        <Link to="/menu">Menu</Link>
-        <Link to="/colors">Colors</Link>
-        <Link to="#">Help</Link>
+        <Link className="hover:underline transition-all" to="/">Home</Link>
+        <Link className="hover:underline transition-all" to="/menu">Menu</Link>
+        <Link className="hover:underline transition-all" to="/colors">Colors</Link>
+        <Link className="hover:underline transition-all" to="#">Help</Link>
       </div>
       {user ? (
         <Popover>

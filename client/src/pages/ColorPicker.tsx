@@ -31,6 +31,23 @@ interface ColorInspiration {
   group: string;
 }
 
+interface Color {
+  name: string;
+  hex: string;
+  rgb: { r: number; g: number; b: number };
+  hsl: { h: number; s: number; l: number };
+  lab: { l: number; a: number; b: number };
+  luminance: number;
+  luminanceWCAG: number;
+  bestContrast: string;
+  swatchImg: { svgNamed: string; svg: string };
+}
+
+interface ColorDataResponse {
+  colors: Color[];
+  error?: { message: string };
+}
+
 export default function ColorPaletteApp() {
   const [colorInput, setColorInput] = useState("#87cefa");
   const [colorData, setColorData] = useState<Color | null>(null);
@@ -44,19 +61,32 @@ export default function ColorPaletteApp() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const fetchColorData = async (hex: string) => {
+  const fetchColorData = async (input: string) => {
     try {
       setLoadingColorData(true);
-      const response = await fetch(
-        `https://api.color.pizza/v1/?values=${hex.replace("#", "")}`
-      );
-      const data = await response.json();
+
+      // Determine if the input is a hex code
+      const isHexCode = /^#[0-9A-F]{6}$/i.test(input);
+      const endpoint = isHexCode
+        ? `https://api.color.pizza/v1/?values=${input.replace("#", "")}`
+        : `https://api.color.pizza/v1/names/?name=${encodeURIComponent(input)}`;
+
+      const response = await fetch(endpoint);
+      const data: ColorDataResponse = await response.json();
 
       if ("error" in data) {
-        setError(data.error.message);
+        setError(data.error?.message as string);
         setColorData(null);
       } else {
-        setColorData(data.colors[0]);
+        // Check if an exact match is available
+        const exactMatch = data.colors.find((color) =>
+          isHexCode
+            ? color.hex.toLowerCase() === input.toLowerCase()
+            : color.name.toLowerCase() === input.toLowerCase()
+        );
+
+        // Set color data to the exact match if found, otherwise to the first color in the array
+        setColorData(exactMatch || data.colors[0]);
         setError(null);
       }
     } catch (err) {
@@ -103,7 +133,11 @@ export default function ColorPaletteApp() {
   const handleColorChange = (value: string) => {
     setColorInput(value);
     setError(null);
-    if (/^#[0-9A-F]{6}$/i.test(value)) {
+
+    const isHexCode = /^#[0-9A-F]{6}$/i.test(value);
+    const isNonEmptyName = value.trim().length > 0 && !isHexCode;
+
+    if (isHexCode || isNonEmptyName) {
       fetchColorData(value);
     } else {
       setColorData(null);
@@ -113,11 +147,14 @@ export default function ColorPaletteApp() {
   const handleColorSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const color = colorInput;
-    if (/^#[0-9A-F]{6}$/i.test(color)) {
+    const isHexCode = /^#[0-9A-F]{6}$/i.test(color);
+    const isNonEmptyName = color.trim().length > 0 && !isHexCode;
+
+    if (isHexCode || isNonEmptyName) {
       fetchColorData(color);
     } else {
       setColorData(null);
-      setError("Please enter a valid hex code.");
+      setError("Please enter a valid hex code or a non empty name");
     }
   };
 
@@ -211,8 +248,8 @@ export default function ColorPaletteApp() {
     inputRef?.current?.click();
   };
 
-   // Handle pasting image
-   const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
+  // Handle pasting image
+  const handlePaste = (event: React.ClipboardEvent<HTMLDivElement>) => {
     const items = event.clipboardData.items;
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
@@ -254,7 +291,8 @@ export default function ColorPaletteApp() {
                       id="colorInputHelp"
                       className="text-sm text-muted-foreground mt-1"
                     >
-                      Enter a valid hex color code (e.g., #ff0000)
+                      Enter a valid hex color code or color name (e.g., #ff0000
+                      or sky blue)
                     </p>
                   </form>
                   <div>
@@ -280,33 +318,33 @@ export default function ColorPaletteApp() {
 
                 {loadingColorData ? (
                   <Loader className="mx-auto backdrop-invert-0 size-5 animate-spin" />
-                ) : (
-                  colorData && (
-                    <div className="space-y-2">
-                      <div className="flex items-center space-x-2">
-                        <div
-                          className="w-6 h-6 rounded-full border"
-                          style={{ backgroundColor: colorData.hex }}
-                          aria-hidden="true"
-                        ></div>
-                        <span className="font-semibold">{colorData.name}</span>
-                      </div>
-                      <p>Hex: {colorData.hex}</p>
-                      <p>
-                        RGB:{" "}
-                        {`${colorData.rgb.r}, ${colorData.rgb.g}, ${colorData.rgb.b}`}
-                      </p>
-                      <p>
-                        HSL:{" "}
-                        {`${Math.round(colorData.hsl.h)}°, ${Math.round(
-                          colorData.hsl.s
-                        )}%, ${Math.round(colorData.hsl.l)}%`}
-                      </p>
-                      <p>Luminance: {colorData.luminance.toFixed(2)}</p>
-                      <p>Best Contrast: {colorData.bestContrast}</p>
-                      <Button onClick={() => setColorData(null)}>Clear</Button>
+                ) : colorData ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <div
+                        className="w-6 h-6 rounded-full border"
+                        style={{ backgroundColor: colorData.hex }}
+                        aria-hidden="true"
+                      ></div>
+                      <span className="font-semibold">{colorData.name}</span>
                     </div>
-                  )
+                    <p>Hex: {colorData.hex}</p>
+                    <p>
+                      RGB:{" "}
+                      {`${colorData.rgb.r}, ${colorData.rgb.g}, ${colorData.rgb.b}`}
+                    </p>
+                    <p>
+                      HSL:{" "}
+                      {`${Math.round(colorData.hsl.h)}°, ${Math.round(
+                        colorData.hsl.s
+                      )}%, ${Math.round(colorData.hsl.l)}%`}
+                    </p>
+                    <p>Luminance: {colorData.luminance.toFixed(2)}</p>
+                    <p>Best Contrast: {colorData.bestContrast}</p>
+                    <Button onClick={() => {setColorData(null); setColorInput("");}}>Clear</Button>
+                  </div>
+                ) : (
+                  <div className="text-center font-semibold text-muted-foreground">{colorInput && `No color found with ${colorInput}`}</div>
                 )}
               </div>
             </CardContent>
