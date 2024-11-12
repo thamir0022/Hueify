@@ -319,10 +319,10 @@ export default function ColorPaletteApp() {
                 {loadingColorData ? (
                   <Loader className="mx-auto backdrop-invert-0 size-5 animate-spin" />
                 ) : colorData ? (
-                  <div className="space-y-2">
+                  <div className="space-y-2 font-mono">
                     <div className="flex items-center space-x-2">
                       <div
-                        className="w-6 h-6 rounded-full border"
+                        className="w-16 rounded-md h-10  border"
                         style={{ backgroundColor: colorData.hex }}
                         aria-hidden="true"
                       ></div>
@@ -341,7 +341,7 @@ export default function ColorPaletteApp() {
                     </p>
                     <p>Luminance: {colorData.luminance.toFixed(2)}</p>
                     <p>Best Contrast: {colorData.bestContrast}</p>
-                    <Button onClick={() => {setColorData(null); setColorInput("");}}>Clear</Button>
+                    <Button className="font-sans" onClick={() => {setColorData(null); setColorInput("");}}>Clear</Button>
                   </div>
                 ) : (
                   <div className="text-center font-semibold text-muted-foreground">{colorInput && `No color found with ${colorInput}`}</div>
