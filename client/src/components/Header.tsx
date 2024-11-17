@@ -15,7 +15,7 @@ const Header = ({ varient }: { varient?: "dark" | "light" }) => {
 
   const handleSignout = async () => {
     try {
-      const res = await fetch("/api/auth/user/sign-out", { method: "POST" });
+      const res = await fetch("/api/auth/sign-out", { method: "POST" });
       if (res.ok) {
         logout();
         navigate("/sign-in");
@@ -38,6 +38,7 @@ const Header = ({ varient }: { varient?: "dark" | "light" }) => {
       <div className="gap-14 flex font-semibold">
         <Link className="hover:underline transition-all" to="/">Home</Link>
         <Link className="hover:underline transition-all" to="/colors">Colors</Link>
+        {user && (<Link className="hover:underline transition-all" to="/history">History</Link>)}
         <Link className="hover:underline transition-all" to="/3d">3D Car</Link>
         <Link className="hover:underline transition-all" to="#">Help</Link>
       </div>

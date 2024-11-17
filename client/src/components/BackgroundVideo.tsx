@@ -23,7 +23,7 @@ const BackgroundVideo = () => {
           Personalize Your Color Palette: Tailor Perfect Matches to Your Images
           with Ease.
         </p>
-        <Link to={'/menu'} type="button" className="btn">
+        <Link to={'/colors'} type="button" className="btn">
           <strong>Discover</strong>
           <div id="container-stars">
             <div id="stars"></div>

@@ -127,6 +127,26 @@ export default function ColorPaletteApp() {
 
   const { toPDF, targetRef } = usePDF({ filename: "hueify.pdf",page: {margin: 10}});
 
+  useEffect(() => {
+    const addToHistory = async () => {
+      const res = await fetch("/api/user/color-history", {
+        headers: {
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({hex: colorData?.hex})
+      })
+
+      const data = await res.json();
+
+      if(res.ok){
+        console.log(data.message);
+      }
+    }
+
+    addToHistory();
+  },[colorData]);
+
   const fetchColorData = async (input: string) => {
     try {
       setLoadingColorData(true);

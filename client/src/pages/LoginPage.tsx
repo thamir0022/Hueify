@@ -28,7 +28,7 @@ export default function LoginPage() {
 
     try {
       setMessage("");
-      const response = await fetch("/api/auth/user/sign-in", {
+      const response = await fetch("/api/auth/sign-in", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
