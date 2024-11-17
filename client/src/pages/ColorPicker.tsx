@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label";
 import { AlertCircle, ImageUp, Loader } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Layout from "@/components/Layout";
+import { usePDF } from "react-to-pdf";
 
 interface Color {
   name: string;
@@ -48,6 +49,69 @@ interface ColorDataResponse {
   error?: { message: string };
 }
 
+// Helper function to create a lighter or darker shade of a hex color
+const adjustBrightness = (hex: string, factor: number) => {
+  const clamp = (val: number) => Math.min(255, Math.max(0, val));
+
+  // Convert hex to RGB
+  const rgb = parseInt(hex.slice(1), 16);
+  let r = (rgb >> 16) & 0xff;
+  let g = (rgb >> 8) & 0xff;
+  let b = rgb & 0xff;
+
+  // Use a factor that makes lighter/darker adjustments more natural
+  if (factor > 0) {
+    // Lighten the color by blending it with white
+    r = clamp(Math.round(r + (255 - r) * (factor / 100)));
+    g = clamp(Math.round(g + (255 - g) * (factor / 100)));
+    b = clamp(Math.round(b + (255 - b) * (factor / 100)));
+  } else {
+    // Darken the color by reducing RGB values proportionally
+    r = clamp(Math.round(r * (1 + factor / 100)));
+    g = clamp(Math.round(g * (1 + factor / 100)));
+    b = clamp(Math.round(b * (1 + factor / 100)));
+  }
+
+  // Convert back to hex and return the new color
+  return `#${((1 << 24) | (r << 16) | (g << 8) | b)
+    .toString(16)
+    .slice(1)
+    .toUpperCase()}`;
+};
+
+const ColorPalette = ({ baseColor }: { baseColor: string }) => {
+  // Generate an array of shades from light to dark
+  const shades = [
+    adjustBrightness(baseColor, 60),
+    adjustBrightness(baseColor, 40),
+    adjustBrightness(baseColor, 20),
+    baseColor, // Original color
+    adjustBrightness(baseColor, -20),
+    adjustBrightness(baseColor, -40),
+    adjustBrightness(baseColor, -60),
+  ];
+
+  return (
+    <div className="p-4">
+      <h2 className="text-lg font-semibold mb-4 font-sans">
+        Color Palette for{" "}
+        <span className="underline font-mono">{baseColor}</span>
+      </h2>
+      <div className="flex items-center gap-2">
+        {shades.map((shade, index) => (
+          <div key={index} className="text-center">
+            <div
+              style={{ backgroundColor: shade }}
+              className="mx-auto size-10 border rounded-lg mb-2"
+            />
+            <p className="text-sm font-semibold">{shade.toLocaleLowerCase()}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
 export default function ColorPaletteApp() {
   const [colorInput, setColorInput] = useState("#87cefa");
   const [colorData, setColorData] = useState<Color | null>(null);
@@ -60,6 +124,8 @@ export default function ColorPaletteApp() {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  const { toPDF, targetRef } = usePDF({ filename: "hueify.pdf",page: {margin: 10}});
 
   const fetchColorData = async (input: string) => {
     try {
@@ -319,32 +385,40 @@ export default function ColorPaletteApp() {
                 {loadingColorData ? (
                   <Loader className="mx-auto backdrop-invert-0 size-5 animate-spin" />
                 ) : colorData ? (
-                  <div className="space-y-2 font-mono">
-                    <div className="flex items-center space-x-2">
-                      <div
-                        className="w-16 rounded-md h-10  border"
-                        style={{ backgroundColor: colorData.hex }}
-                        aria-hidden="true"
-                      ></div>
-                      <span className="font-semibold">{colorData.name}</span>
+                  <div className="size-full">
+                    <div ref={targetRef} className="space-y-2 font-mono">
+                      <div className="flex items-center space-x-2">
+                        <div
+                          className="w-16 rounded-md h-10  border"
+                          style={{ backgroundColor: colorData.hex }}
+                          aria-hidden="true"
+                        ></div>
+                        <span className="font-semibold">{colorData.name}</span>
+                      </div>
+                      <p>Hex: {colorData.hex}</p>
+                      <p>
+                        RGB:{" "}
+                        {`${colorData.rgb.r}, ${colorData.rgb.g}, ${colorData.rgb.b}`}
+                      </p>
+                      <p>
+                        HSL:{" "}
+                        {`${Math.round(colorData.hsl.h)}°, ${Math.round(
+                          colorData.hsl.s
+                        )}%, ${Math.round(colorData.hsl.l)}%`}
+                      </p>
+                      <p>Luminance: {colorData.luminance.toFixed(2)}</p>
+                      <p>Best Contrast: {colorData.bestContrast}</p>
+                      <ColorPalette baseColor={colorData.hex} />
                     </div>
-                    <p>Hex: {colorData.hex}</p>
-                    <p>
-                      RGB:{" "}
-                      {`${colorData.rgb.r}, ${colorData.rgb.g}, ${colorData.rgb.b}`}
-                    </p>
-                    <p>
-                      HSL:{" "}
-                      {`${Math.round(colorData.hsl.h)}°, ${Math.round(
-                        colorData.hsl.s
-                      )}%, ${Math.round(colorData.hsl.l)}%`}
-                    </p>
-                    <p>Luminance: {colorData.luminance.toFixed(2)}</p>
-                    <p>Best Contrast: {colorData.bestContrast}</p>
+                    <div className="flex gap-3">
                     <Button className="font-sans" onClick={() => {setColorData(null); setColorInput("");}}>Clear</Button>
+                    <Button variant="outline" onClick={() => toPDF()}>Download</Button>
+                    </div>
                   </div>
                 ) : (
-                  <div className="text-center font-semibold text-muted-foreground">{colorInput && `No color found with ${colorInput}`}</div>
+                  <div className="text-center font-semibold text-muted-foreground">
+                    {colorInput && `No color found with ${colorInput}`}
+                  </div>
                 )}
               </div>
             </CardContent>

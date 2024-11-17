@@ -37,8 +37,8 @@ const Header = ({ varient }: { varient?: "dark" | "light" }) => {
       <Link to={"/"} className="text-2xl font-semibold">Hueify</Link>
       <div className="gap-14 flex font-semibold">
         <Link className="hover:underline transition-all" to="/">Home</Link>
-        <Link className="hover:underline transition-all" to="/menu">Menu</Link>
         <Link className="hover:underline transition-all" to="/colors">Colors</Link>
+        <Link className="hover:underline transition-all" to="/3d">3D Car</Link>
         <Link className="hover:underline transition-all" to="#">Help</Link>
       </div>
       {user ? (
