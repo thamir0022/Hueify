@@ -1,4 +1,4 @@
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Model from "../components/Mclaren720";
 import { CustomizationProvider } from "@/components/Customization";
 import { Canvas } from "@react-three/fiber";
@@ -13,11 +13,17 @@ import { Loader } from "lucide-react";
 //   rimsColor: string;
 // }
 
+interface ApiResponse {
+  history: string[];
+  message?: string;
+}
+
 const CarModel: React.FC = () => {
   const [bodyColor, setBodyColor] = useState<string>("#ff0000");
   const [accessoriesColor, setAccessoriesColor] = useState<string>("#000000");
   const [rimsColor, setRimsColor] = useState<string>("#000000");
   const [material, setMaterial] = useState<string>("null");
+  const [colors, setColors] = useState<string[]>([]);
   // const [modelLoading, setModelLoading] = useState<boolean>(true);
 
   const handleBodyColorChange = (color: string): void => {
@@ -36,12 +42,32 @@ const CarModel: React.FC = () => {
     setRimsColor(color);
   };
 
+  useEffect(() => {
+    const fetchColors = async () => {
+      try {
+        const res = await fetch("/api/user/get-history");
+        const data: ApiResponse = await res.json();
+        if (!res.ok) {
+          throw new Error(data.message || "Error fetching color history");
+        }
+        setColors(data.history);
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    fetchColors();
+  }, []);
+
   return (
     <Layout>
       <CustomizationProvider>
         <div className="w-screen h-[calc(100vh-4rem)]">
           <Suspense
-            fallback={<div className="h-screen w-screen flex items-center justify-center backdrop-invert-0"><Loader className="size-8 animate-spin"/></div>}
+            fallback={
+              <div className="h-screen w-screen flex items-center justify-center backdrop-invert-0">
+                <Loader className="size-8 animate-spin" />
+              </div>
+            }
           >
             <Canvas>
               <color attach="background" args={["#101010"]} />
@@ -84,6 +110,16 @@ const CarModel: React.FC = () => {
               onRimsColorChange={handleRimsColorChange}
               onMaterialChange={handleMaterialChange}
             />
+            {colors.length > 0 && (
+              <div className="fixed bottom-4 w-1/3 mx-3 backdrop-blur-sm space-y-2">
+              <h2 className="text-xl text-center font-semibold text-gray-200">My Color Collections</h2>
+                <div className="grid grid-cols-6 grid-rows-2 gap-2 h-20">
+                  {colors.map((color) => (
+                    <div onClick={() => setBodyColor(color)} style={{backgroundColor: color}} className="cursor-pointer rounded-lg text-transparent hover:text-white hover:scale-110 duration-200">{color}</div>
+                  ))}
+                </div>
+              </div>
+            )}
           </Suspense>
         </div>
       </CustomizationProvider>
