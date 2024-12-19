@@ -7,12 +7,6 @@ import Configurator from "@/components/Configurator";
 import Layout from "@/components/Layout";
 import { Loader } from "lucide-react";
 
-// interface CustomColors {
-//   body: string;
-//   accesoriesColor: string;
-//   rimsColor: string;
-// }
-
 interface ApiResponse {
   history: string[];
   message?: string;

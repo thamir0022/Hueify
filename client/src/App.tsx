@@ -9,6 +9,7 @@ import ColorPicker from "./pages/ColorPicker";
 import Image from "./pages/Image";
 import CarModel from "./pages/CarModel";
 import ColorHistory from "./pages/HistoryPage";
+import TshirtModel from "./pages/TshirtModel";
 
 const App = () => {
   return (
@@ -18,7 +19,8 @@ const App = () => {
           <Route element={<PrivateRoute/>}>
             <Route path="/colors" element={<ColorPicker/>}/>
             <Route path="/history" element={<ColorHistory/>}/>
-            <Route path="/3d" element={<CarModel/>}/>
+            <Route path="/3d-car" element={<CarModel/>}/>
+            <Route path="/3d-tshirt" element={<TshirtModel/>}/>
           </Route>
           <Route path="/" element={<HomePage />} />
           <Route path="/sign-in" element={<LoginPage />} />

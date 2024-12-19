@@ -39,8 +39,8 @@ const Header = ({ varient }: { varient?: "dark" | "light" }) => {
         <Link className="hover:underline transition-all" to="/">Home</Link>
         <Link className="hover:underline transition-all" to="/colors">Colors</Link>
         {user && (<Link className="hover:underline transition-all" to="/history">History</Link>)}
-        <Link className="hover:underline transition-all" to="/3d">3D Car</Link>
-        <Link className="hover:underline transition-all" to="#">Help</Link>
+        <Link className="hover:underline transition-all" to="/3d-car">3D Car</Link>
+        <Link className="hover:underline transition-all" to="/3d-tshirt">3D Tshirt</Link>
       </div>
       {user ? (
         <Popover>
@@ -77,8 +77,6 @@ const Header = ({ varient }: { varient?: "dark" | "light" }) => {
                 <Button variant={"outline"} onClick={() => handleSignout()}>
                   Log Out
                 </Button>
-                <Button variant={"default"}>Edit</Button>
-                <Button variant={"destructive"}>Delete</Button>
                 <ModeToggle />
               </div>
             </div>
